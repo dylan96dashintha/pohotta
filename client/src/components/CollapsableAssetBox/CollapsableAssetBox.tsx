@@ -41,7 +41,6 @@ const CollapsableAssetBox = (props: any) => {
     let location = props.data2;
     const [isOpen, setIsOpen] = useState(false);
 
-    {console.log("beforeeeeee",isOpen)} 
     function assistBoxOpen() {
         dispatch(setAssistBox(isOpen, props.index));
     }
