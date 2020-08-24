@@ -1,0 +1,140 @@
+
+
+
+
+------------------------------------------
+-- SEEDS
+------------------------------------------
+
+
+-- Create seed data for user
+-- Usage: select * from app.seeds_create(1,5);
+create or replace function app.seeds_create(_cust_id integer, _month integer, out _status smallint, out _msg text, out _d json) as $$
+declare
+	_acc_money_id integer; _acc_investment_id integer; _acc_debt_id integer; _acc_other_id integer;
+	_sign integer; _calc_transaction decimal; _parent_id integer;
+	_date date := concat('2020-',_month,'-26'); _balance_date date := concat('2020-',_month,'-01');
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	select into _cust_id id from app.customers where id = _cust_id;
+    if _cust_id is null then
+		_status := 404;
+		_msg := 'e_user_not_found';
+		_d := '{}';
+	else
+	--ACCOUNTS
+    insert into app.cust_accounts(description, is_balance_mode, account_type_id,  customer_id)
+        values('S-pankin tili s', true, 1, _cust_id) returning id into _acc_money_id;
+	insert into app.cust_accounts(description, is_balance_mode, account_type_id,  customer_id)
+        values('Nordnet s', true, 2, _cust_id) returning id into _acc_investment_id;
+	insert into app.cust_accounts(description, is_balance_mode, account_type_id,  customer_id)
+        values('Asuntolaina s', true, 3, _cust_id) returning id into _acc_debt_id;
+	insert into app.cust_accounts(description, is_balance_mode, account_type_id,  customer_id)
+        values('Kultakimpale s', true, 4, _cust_id) returning id into _acc_other_id;
+		
+	--BEGINNIG BALANCES
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Alkusaldo', 10000, _balance_date,_acc_money_id,5,null); --5 = balance
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Alkusaldo', 200, _balance_date,_acc_investment_id,5,null); --5 = balance
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Alkusaldo', -50000, _balance_date,_acc_debt_id,5,null); --5 = balance
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Alkusaldo', 100, _balance_date,_acc_other_id,5,null); --5 = balance
+	
+	
+	--TRANSACTIONS MONTH 1
+	--Get transaction sign, _cust_acc_id, _trans_type_id, _trans_direction,  
+	select _x into _sign from app.x_help_get_sign(_acc_money_id, 1, null); --raise notice 'Sign: %', _sign;
+	-- Insert income
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Tulot yht', 2500 * _sign, _date,_acc_money_id,1,null);
+		
+	-- Invest transfer
+	select _x into _sign from app.x_help_get_sign(_acc_money_id, 3, 'out');
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values ('Siirto 1', 500 * _sign, _date,_acc_money_id,3,null) returning id into _parent_id; --from money
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id,parent_id)
+		values ('Siirto 1', 500 * _sign *-1, _date,_acc_investment_id,3,null,_parent_id); --to investment
+	-- Debt transfer		
+	select _x into _sign from app.x_help_get_sign(_acc_money_id, 3, 'out');
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values ('Siirto 2', 500 * _sign, _date,_acc_money_id,3,null) returning id into _parent_id; --from money
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id,parent_id)
+		values ('Siirto 2', 500 * _sign *-1, _date,_acc_debt_id,3,null,_parent_id); --to investment
+			
+	-- Insert cost
+	select into _calc_transaction 11250 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_money_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Menot yhteensä', _calc_transaction, _date,_acc_money_id,2,null); --2 = cost
+	
+	--Investment
+	select into _calc_transaction 725 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_investment_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Arvon muutos', _calc_transaction, _date,_acc_investment_id,4,null); --4 = change
+	
+	--Debt
+	select into _calc_transaction -49550 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_debt_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Velan kulut yht', _calc_transaction, _date,_acc_debt_id,2,null); --2 = cost
+		
+	--Other
+	select into _calc_transaction 95 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_other_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Arvon muutos', _calc_transaction, _date,_acc_other_id,4,null); --4 = change
+		
+		
+	--TRANSACTIONS MONTH 2
+	_date := concat('2020-',_month+1,'-26');
+	--Get transaction sign, _cust_acc_id, _trans_type_id, _trans_direction,  
+	select _x into _sign from app.x_help_get_sign(_acc_money_id, 1, null); --raise notice 'Sign: %', _sign;
+	-- Insert income
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Tulot yht', 2500 * _sign, _date,_acc_money_id,1,null);
+		
+	-- Invest transfer
+	select _x into _sign from app.x_help_get_sign(_acc_money_id, 3, 'out');
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values ('Siirto 3', 600 * _sign, _date,_acc_money_id,3,null) returning id into _parent_id; --from money
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id,parent_id)
+		values ('Siirto 3', 600 * _sign *-1, _date,_acc_investment_id,3,null,_parent_id); --to investment
+	-- Debt transfer		
+	select _x into _sign from app.x_help_get_sign(_acc_money_id, 3, 'out');
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values ('Siirto 4', 600 * _sign, _date,_acc_money_id,3,null) returning id into _parent_id; --from money
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id,parent_id)
+		values ('Siirto 4', 600 * _sign *-1, _date,_acc_debt_id,3,null,_parent_id); --to investment
+			
+	-- Insert cost
+	select into _calc_transaction 12250 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_money_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Menot yhteensä', _calc_transaction, _date,_acc_money_id,2,null); --2 = cost
+	
+	--Investment
+	select into _calc_transaction 1325 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_investment_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Arvon muutos', _calc_transaction, _date,_acc_investment_id,4,null); --4 = change
+	
+	--Debt
+	select into _calc_transaction -49000 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_debt_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Velan kulut yht', _calc_transaction, _date,_acc_debt_id,2,null); --2 = cost
+		
+	--Other
+	select into _calc_transaction 101 - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_other_id and date <= _date; raise notice 'Calc.: %', _calc_transaction;
+	insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+		values('Arvon muutos', _calc_transaction, _date,_acc_other_id,4,null); --4 = change
+    
+    _d := '{}';
+	_status := 200;
+	_msg := 's_seeds_created';
+	 
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+

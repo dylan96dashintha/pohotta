@@ -1,0 +1,57 @@
+@import "../../common/scss/default.scss";
+
+.footer-navigation {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    background-color: #08062F;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    .footer-navigation-button {
+        display: flex;
+        flex-direction: column;
+        opacity: 0.75;
+        cursor: pointer;
+        padding: 15px 0 10px;
+    
+        label {
+            margin-top: 5px;
+            font-size: 12px;
+            color: white;
+            cursor: pointer;
+        }
+    
+        &:after {
+            content: '';
+            border-radius: 15px 15px 0px 0px;
+            height: 5px;
+        }
+
+        .footer-img {
+            height: 24px;
+            max-width: 25px;
+            margin: auto;
+        }
+    
+    }
+
+    .footer-link-active {
+        font-weight: 500;
+    
+        &:after {
+            content: '';
+            background: transparent linear-gradient(180deg, #00c45b00 0%, $green 100%) 0% 0% no-repeat padding-box;
+            border-radius: 15px 15px 0px 0px;
+            height: 5px;
+        }
+    }
+}
+
+
+.footer-navigation-button.selected {
+    opacity: 1;
+}
+

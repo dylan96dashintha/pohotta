@@ -1,0 +1,58 @@
+@import '../../common/scss/default.scss';
+.profile-container {
+	background-color: $bgc;
+	display:flex;
+	flex:1;
+	flex-direction:column;
+	justify-content: space-between;
+	height:100vh;
+
+	h1 {
+		color: $white;
+	}
+	h2 {
+		color: $white_75;
+	}
+	.buttons-container {
+		margin-top:28px;
+		display:flex;
+		flex-direction:column;
+
+		@include respond('m') { //my vision how this could look on desktop..
+			max-width: 500px;
+			margin-left:15px;
+			margin-bottom:15px;
+		}
+
+	}
+
+	.navi-button-container {
+		background-color: #100d35;
+		margin-top: 2px;
+		margin-bottom: 2px;
+		padding: 16px 32px;
+		label {
+			font-size: 22px;
+			color: $white;
+			font-weight: bold;
+		cursor: pointer;
+
+		}
+		cursor: pointer;
+
+	}
+
+	.profile-info{
+		h1, h2 {
+			padding:0;
+			margin: 0
+		}
+		h2 {
+			margin-top:10px;
+		}
+	}
+section.profile-info {
+	padding-left: 33px;
+
+}
+}

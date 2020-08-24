@@ -1,0 +1,857 @@
+{
+	"info": {
+		"_postman_id": "97c9e0f8-474f-40df-b133-9df13ea17fb4",
+		"name": "Pohatta-app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Landing-Page",
+			"item": [
+				{
+					"name": "Post Forecast Calc",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"goal\":20000,\r\n\"currentInvestments\":10000,\r\n\"monthlyIncome\":2000,\r\n\"monthlyCost\":1000,\r\n\"interestRate\":7\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/landing-page/forecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"landing-page",
+								"forecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Forecast Calc Error",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"goal\":null,\r\n\"currentInvestments\":400000,\r\n\"monthlyIncome\":2000,\r\n\"monthlyCost\":1000,\r\n\"interestRate\":\"\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/landing-page/forecast",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"landing-page",
+								"forecast"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Join Invite List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"email\":\"mikko2@test.com\",\r\n\"subscription\":\"basic\",\r\n\"important\":\"tärkein\",\r\n\"issue\":null,\r\n\"solution\":null\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/landing-page/join-invite-list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"landing-page",
+								"join-invite-list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Frontpage",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:3001/v1/landing-page/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"v1",
+								"landing-page",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "POST Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"email\": \"mikko@feellike.fi\",\n\"passw\": \"Salasanana1!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Sign In",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"email\": \"mikko@feellike.fi\",\n\"passw\": \"Salasanana1!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/signin",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET User by Token",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvX25AdGVzdC5jb20iLCJpYXQiOjE1ODc3MTcwNTYsImV4cCI6MTU4NzcyMDY1Nn0.1Cah4Amutsr7QUkkma0LeO3ID1eXC113M9XfcKqGKmA",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/member",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"member"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Verify Email",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/verify-email/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvQGZlZWxsaWtlLmZpIiwiaWF0IjoxNTg4OTM0NzEwLCJleHAiOjE1ODg5MzgzMTB9.MZLatYmTL5aFUjChw9irEN-oonl6HpG2kIxAGinOPDc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-email",
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvQGZlZWxsaWtlLmZpIiwiaWF0IjoxNTg4OTM0NzEwLCJleHAiOjE1ODg5MzgzMTB9.MZLatYmTL5aFUjChw9irEN-oonl6HpG2kIxAGinOPDc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST SignIn Forgotten",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"email\":\"mikko@feellike.fi\" \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/signin-forgotten/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signin-forgotten",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Reset Passw",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/signin-forgotten/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvQGZlZWxsaWtlLmZpIiwiaWF0IjoxNTg4OTM0ODQ1LCJleHAiOjE1ODg5Mzg0NDV9.5nqSeJmlscbhRs71ifP89i5quy-VCzDTGCt8pDA5Sdo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signin-forgotten",
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvQGZlZWxsaWtlLmZpIiwiaWF0IjoxNTg4OTM0ODQ1LCJleHAiOjE1ODg5Mzg0NDV9.5nqSeJmlscbhRs71ifP89i5quy-VCzDTGCt8pDA5Sdo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Reset Passw",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"newPassw\":\"Salasanana2!\" \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/signin-forgotten/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvQGZlZWxsaWtlLmZpIiwiaWF0IjoxNTg4OTM0ODQ1LCJleHAiOjE1ODg5Mzg0NDV9.5nqSeJmlscbhRs71ifP89i5quy-VCzDTGCt8pDA5Sdo",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signin-forgotten",
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pa2tvQGZlZWxsaWtlLmZpIiwiaWF0IjoxNTg4OTM0ODQ1LCJleHAiOjE1ODg5Mzg0NDV9.5nqSeJmlscbhRs71ifP89i5quy-VCzDTGCt8pDA5Sdo"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "GET Account Types",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Create Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"description\": \"S-pankin tili postman 22\",\n\t\"is_balance_mode\" : \"true\",\n\t\"account_type_id\" : \"1\",\n\t\"date\": \"2020-06-01T14:34:08.700Z\",\n\t\"balance\":1000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Accounts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Get One Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Get All But One Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/balance-accounts/39",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"balance-accounts",
+								"39"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Update Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\": 1,\n\t\"description\": \"S-pankin tili muokattu postman\",\n\t\"is_balance_mode\" : \"true\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DEL Delete Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Account Transaction Types",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/39/transaction-types",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"39",
+								"transaction-types"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "POST Create Transaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"description\": \"Saldo\",\n\t\"transaction_type_id\":5,\n\t\"amount\": 50,\n\t\"date\": \"2020-07-01T14:34:08.700Z\",\n\t\"cust_account_id\": 16,\n\t\"category_id\":null,\n\t\"transfer_direction\": null,\n\t\"balance_account_id\":null,\n\t\"customer_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/transactions/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Get Transactions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/transactions/account/36",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"account",
+								"36"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Accounts Balances",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/accounts/balances/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"accounts",
+								"balances",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Patch Transaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\":19,\n\t\"customer_id\":2,\n\t\"description\": \"Editoitu 2\",\n\t\"amount\": 100,\n\t\"date\": \"2020-05-24T14:34:08.700Z\",\n\t\"category_id\":null,\n\t\"transfer_direction\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/transactions/8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DEL Delete Transaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"customer_id\":2,\n\t\"description\": \"Tulo\",\n\t\"transaction_type_id\":1,\n\t\"amount\": 100,\n\t\"date\": \"2020-05-24T14:34:08.700Z\",\n\t\"cust_account_id\": 4,\n\t\"category_id\":null,\n\t\"transfer_direction\": null,\n\t\"balance_account_id\":null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/transactions/20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"transactions",
+								"20"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	]
+}

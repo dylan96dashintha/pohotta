@@ -1,0 +1,39 @@
+/** INVITE LIST */
+
+--IVITE LIST
+--drop table if exists app.events
+create table if not exists app.invite (
+    id serial not null primary key,
+    email text unique not null,
+    subscription text not null,
+    important text null,
+    issue text null,
+    solution text null
+);
+
+--CREATE INVITE
+-- usage: select * from app.invite_create('mikko@test.com', 'basic', 'tärkein', null, null);
+create or replace function app.invite_create(req_email text, req_subscription text, req_important text default null, req_issue text default null, req_solution text default null,
+out status smallint, out js json) AS $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin
+
+     --Check if already exists
+    if exists (select id from app.invite where email = req_email) then 
+		status := 409;
+		js := '{"message": ""}';
+    else
+        insert into app.invite(email, subscription, important, issue, solution)
+        values(req_email, req_subscription, req_important, req_issue, req_solution);
+		js := '{"message": ""}';
+		status := 201;
+	end if;
+    
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        js := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+        status := 500;
+end;
+$$ language plpgsql;
+

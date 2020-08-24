@@ -1,0 +1,18 @@
+@import '../../common/scss/default.scss';
+
+
+header.page-header {
+	padding-left: 33px;
+	padding-top: 22px;
+label.pohatta {
+	font-family: benton-modern-display;
+	font-size: 16px;
+	color: $white_75;
+	font-weight: bold;
+	letter-spacing: 0.98px;
+}
+}
+span.icon {
+	margin-left: 10px;
+	cursor: pointer;
+}

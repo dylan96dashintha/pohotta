@@ -1,0 +1,81 @@
+/*
+Purpose: Database creation for pohatta.app
+Author: P.Ohatta, Twitter @RahaPohatta
+Insipration: https://sivers.org/pg
+*/
+
+
+/* Concatenate all sql files for easier build 
+>> run eg. in cmd
+
+cat
+app/src/config/base.psql
+app/src/config/db-build/helpers.psql
+app/src/config/db-build/auth.psql 
+app/src/config/db-build/events.psql
+app/src/config/db-build/invite.psql
+app/src/config/db-build/settings.psql
+app/src/config/db-build/accounts.psql
+app/src/config/db-build/categories.psql
+app/src/config/db-build/sources.psql
+app/src/config/db-build/transactions.psql
+app/src/config/db-build/visuals.psql
+app/src/config/db-build/reports.psql
+app/src/config/db-build/subscriptions.psql
+app/src/config/db-build/invoices.psql
+app/src/config/db-build/accounts_balances.psql
+app/src/config/db-build/seeds.psql
+app/src/config/db-build/test.psql
+
+>
+app/src/config/db-build.psql
+
+*/
+
+------------------------------------------
+-- BASE SETUP
+------------------------------------------
+
+
+/** Schemas */ 
+create schema if not exists public;
+create schema if not exists app;
+
+/**Extensions*/
+-- pgcrypto for people.hashpass
+--create extension if not exists pgcrypto WITH schema public;
+--create extension if not exists "uuid-ossp" WITH schema public;
+
+--raise notice 'Info: %', old;
+
+
+/** Reset database*/
+-- Usage: select * from app.reset_database('pohatta_dev_2020');
+create or replace function app.reset_database(_db_name text, out d text) as $$
+declare
+	all_tables text;
+	all_functions text;
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	-- this only performs select, the result should be run manually. Just to prevent 
+	--select all tables 
+	if (select current_database()) = _db_name then
+		select string_agg('drop table if exists app.' ||  tablename, '' || ' cascade;') from pg_tables where schemaname = 'app' 
+		into all_tables;
+		select string_agg('drop function if exists app.' ||  routine_name, '' || ' cascade;') from information_schema.routines where specific_schema='app' 
+		into all_functions;
+		d := concat(all_tables, ';' , all_functions);
+		execute d;
+	else 
+		raise 'not_dev_db';
+	end if;
+    
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+
+
+

@@ -1,0 +1,32 @@
+{
+  "name": "pohatta_app",
+  "version": "1.0.0",
+  "description": "pohatta app",
+  "main": "dist/main",
+  "engines": {
+    "node": "12.x",
+    "npm": "6.x"
+  },
+  "scripts": {
+    "install": "npm run install:client && npm run install:server",
+    "install:client": "(cd ./client && npm install)",
+    "install:server": "(cd ./app && npm install)",
+    "postinstall": "npm run build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "(cd ./client && npm run build)",
+    "build:server": "(cd ./app && npm run build)",
+    "start": "npm run start:prod --prefix ./app",
+    "start:dev": "npm run start:client & npm run start:server",
+    "start:client": "(cd ./client && npm run start:dev)",
+    "start:server": "(cd ./app && npm run start:dev)"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://Pohatta@bitbucket.org/Pohatta/pohatta_app.git"
+  },
+  "author": "P.Ohatta",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/Pohatta/pohatta_app#readme"
+}

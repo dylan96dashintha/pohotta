@@ -1,0 +1,139 @@
+@import "../../common/scss/default.scss";
+@import "../../common/scss/button.scss";
+$white_77: rgba(255, 255, 255, 0.77);
+$white_75: rgba(255, 255, 255, 0.77);
+$white_60: rgba(255, 255, 255, 0.6);
+$white_30: rgba(255, 255, 255, 0.3);
+$white_10: rgba(255, 255, 255, 0.1);
+
+.breadcrumbs {
+    height: 16px;
+    color: #7B7B7B;
+    font-family: "Sitka Small";
+    font-size: 16px;
+    
+  }
+
+.month-summary {
+    padding: 15px 30px;
+
+    .month-summary-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding-bottom: 15px;
+        label {
+            color: white;
+        }
+        label.bold {
+            font-weight: bold;
+        }
+        label.green {
+            color: $green;
+        }
+    }
+
+    .asset-box {
+        margin-bottom: 10px;
+    }
+}
+
+.transaction-summmary {
+	height: 30px;
+	color : #fff;
+	margin-top: 20px;
+
+    .month-label {
+        float: left;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .month-sum {
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .transaction-percentage {
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+    .transaction-percentage.pos {
+        color: green;
+    }
+
+    .transaction-percentage.neg {
+        color: red;
+    }
+
+    
+}
+
+.transaction-type {
+	width: 100%;
+	height: 25px;
+	color: #fff;
+
+	.name {
+		float: left;
+		font-size: 18px;
+		margin-left: 20px;
+		line-height: 25px;
+	}
+	
+	.sum {
+		float: right;
+	}
+	
+	.sum.pos {
+		color: green;
+	}
+	
+	.sum.neg {
+		color: red;
+	}
+}
+
+
+
+.event-container {
+    .event-row {
+        display: flex;
+        flex-direction: row;
+        padding: 15px 30px;
+        border-radius: 10px;
+        margin-bottom: 5px;
+        margin-left: 15px;
+        margin-right: 15px;
+
+        flex: 12;
+        .r2,
+        .r3 {
+            flex: 2;
+        }
+
+        .r1 {
+            flex: 4;
+        }
+        .r4 {
+            flex: 4;
+            text-align: right;
+        }
+    }
+
+    .event-row.header {
+        color: $white_75;
+    }
+    .event-row.income {
+        color: white;
+        background-color: $innerBgc2;
+    }
+    .event-row.expense {
+    }
+    
+}
+

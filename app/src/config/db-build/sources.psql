@@ -1,0 +1,15 @@
+
+
+
+
+------------------------------------------
+-- SOURCES
+------------------------------------------
+
+/** SOURCES */
+create table if not exists app.sources ( --drop table if exists app.sources
+    id smallint primary key,
+    description text 
+);
+insert into app.sources (id, description)
+values (1,'actual'),(2,'plan'),(3,'goal') on conflict do nothing;

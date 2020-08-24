@@ -1,0 +1,45 @@
+@import './normalize.min.scss';
+@import '../tools/mixins.scss';
+@import './breakpoints.scss';
+@import './colors.scss';
+@import url('https://use.typekit.net/ypc2tvx.css');
+// @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300&display=swap');
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/montserrat-v14-latin-regular.eot'); /* IE9 Compat Modes */
+  src: local('Montserrat Regular'), local('Montserrat-Regular'),
+       url('../fonts/montserrat-v14-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/montserrat-v14-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/montserrat-v14-latin-regular.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/montserrat-v14-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/montserrat-v14-latin-regular.svg#Montserrat') format('svg'); /* Legacy iOS */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Montserrat', Fallback, sans-serif;
+  letter-spacing: 0.25px;
+  background-color: #fff;
+  font-size: 16px;
+  color: $dark-blue;
+
+  @include respond('m') {
+    font-size: 1.2em;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'benton-modern-display';
+}

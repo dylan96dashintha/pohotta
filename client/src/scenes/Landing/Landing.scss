@@ -1,0 +1,290 @@
+@import '../../common/scss/default.scss';
+@import '../../common/scss/button.scss';
+
+.landing {
+
+	.content {
+		max-width: 95%;
+	
+		@include respond('s') {
+			width: 80%;
+		}
+
+		@include respond('l') {
+			width: 60%;
+		}
+    }
+    
+    h1.landing-page-header {
+        color: $dark-blue;
+    }
+
+	p.landing-page-text {
+		font-size: 18px;
+		font-weight: 300;
+		letter-spacing: 0.46px;
+		opacity: 0.89;
+	}
+
+	.small {
+		font-size: 0.8em !important;
+		opacity: 0.70 !important;
+	}
+
+	.row {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+
+		@include respond('m') {
+			flex-direction: row;
+			align-items: start;
+			justify-content: center;
+		}
+	}
+
+	.item-row {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	.full {
+	  max-width: 100%;
+	}
+}
+
+.link-button {
+	border: 0;
+	border-radius: 25px;
+	padding: 10px;
+	width: 100%;
+	margin-top: 6px;
+	margin-right: 5px;
+	max-width: 185px;
+	text-decoration: none;
+
+	&__primary {
+		display: inline-block;
+		color: $white;
+		background-color: $green;
+		text-align: center;
+
+		&:hover {
+			color: $white;
+			text-decoration: underline;
+		}
+	}
+}
+
+.main-header {
+	text-align: center;
+	background-color:#15123B;
+	margin-bottom: -1px;
+
+	@include respond('s') {
+		margin-bottom: -22px;
+	}
+
+	.welcome {
+		color: $white;
+		min-height: 260px;
+		height: auto;
+
+		@include respond('s') {
+			height: 55vh;
+			min-height: 450px;
+		}
+	
+		@include respond('m') {
+			height: 78vh;
+			min-height: 600px;
+		}
+	
+		.main-cta {
+			margin-bottom: 75px;
+
+			@include respond('m') {
+				padding-top: 50px;
+			}
+	
+			.landing-page-header-main {
+                font-size: 2.3em;
+                color:$white;
+
+				@include respond('s') {
+					font-size: 3.5em;
+				}
+			}
+			.landing-page-description {
+				margin-bottom: 25px;
+
+				@include respond('s') {
+					font-size: 1.2em;
+				}
+
+				@include respond('l') {
+					font-size: 1.3em;
+				}
+			}
+		}
+	
+		
+		.welcome-bg {
+			background-color: $bgc;
+			background-image: linear-gradient(to right, $bgc, rgba(0, 226, 255, 0.12), $bgc );
+			height: 100%;
+			clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 15vw));
+	
+			@include respond('s') {
+				clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 10vw));
+			}
+	
+		}
+	}
+}
+
+.before-target-calculator {
+	height: 1px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.about {
+	padding: 75px 5% 0 5%;
+	text-align: center;
+
+	@include respond('m') {
+		padding: 5% 5% 0 5%;
+	}
+
+	h2 {
+		text-align: center;
+        color:$dark-blue !important;
+        padding-left: 0px !important;
+	}
+
+	.info-step {
+		margin-bottom: 50px;
+		padding: 0 5px;
+
+		.info-image {
+			min-height: 200px;
+			position: relative;
+	
+			span {
+				position: absolute;
+				top: 0;
+				left: 0;
+				color: $green;
+				font-family: benton-modern-display, serif;
+				font-size: 54px;
+			}
+
+			img.info-img {
+				display: block;
+				height: auto;
+				max-width: 100%;
+				margin:auto;
+			}
+		}
+	}
+	
+}
+
+.pricing {
+	padding: 75px 5% 0 5%;
+	text-align: center;
+
+	background: transparent
+		linear-gradient(
+			0deg,
+			rgba(241, 214, 245, 0.2) 0%,
+			rgba(185, 183, 240, 0.2) 53%,
+			rgba(136, 155, 235, 0.2) 100%
+		)
+		0% 0% no-repeat padding-box;
+
+	@include respond('m') {
+		padding: 5% 5% 0 5%;
+	}
+
+	.join-now {
+		background-color: $innerBgc2;
+		padding: 5px 10px;
+		border-radius: 10px;
+		border-top: 3px solid $green;
+		margin-bottom: 25px;
+
+		p.join-text {
+			font-size: 16px;
+			letter-spacing: 0.46px;
+			opacity: 0.89;
+			color: $white;
+
+			@include respond('s') {
+				font-weight: bold;
+			}
+		}
+	}
+
+}
+
+.security {
+	padding: 75px 5% 10% 5%;
+	text-align: center;
+
+	@include respond('m') {
+		padding: 5% 5% 5% 5%;
+	}
+}
+
+.dream {
+	padding: 75px 5% 5% 5%;
+	text-align: center;
+	background: transparent url('../../common/images/dreams.png') no-repeat;
+	background-size: cover;
+	background-position: center;
+	color: $white;
+	position: relative;
+
+	@include respond('m') {
+		padding: 5% 5% 5% 5%;
+	}
+
+		&:before {
+			background-color: #03002a;
+			opacity: 0.75;
+			content:"";
+			display: block;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+		}
+
+		.join-header {
+			position: relative;
+		}
+
+		.green-text {
+			color: $green;
+			font-weight: bold;
+		}
+
+		ol.join-task-ol {
+			z-index: 0;
+
+			li.join-task-li {
+				text-align: left;
+				font-weight: 300;
+				letter-spacing: 0.46px;
+				opacity: 0.89;
+			}
+		}
+
+}
+

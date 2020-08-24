@@ -1,0 +1,27 @@
+
+
+
+
+------------------------------------------
+-- SUBSCRIPTIONS
+------------------------------------------
+
+/** SUBSCRIPTIONS */
+create table if not exists app.subscriptions ( --drop table if exists app.subscriptions
+    id smallint primary key,
+    description text not null,
+    unit_price decimal not null,
+    unit_price_vat_pct decimal not null, --vat percentage e.g. 0,24
+    duration_months smallint not null
+);
+insert into app.subscriptions (id, description,unit_price,unit_price_vat_pct,duration_months)
+values (1,'free',0,0,12),(2,'basic',0.5,0.24,12),(3,'vip','6',0.24,12) on conflict do nothing;
+
+/** CUSTOMERS SUBSCRIPTIONS */
+create table if not exists app.customers_subscriptions ( --drop table if exists app.customers_subscriptions
+    id serial primary key,
+    start_date timestamp with time zone not null default now(),
+    end_date timestamp with time zone not null,
+    subscription_id smallint not null references app.subscriptions(id) on delete set null,
+    customer_id integer not null references app.customers(id) on delete cascade
+);

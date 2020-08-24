@@ -1,0 +1,150 @@
+@import '../../common/scss/default.scss';
+@import '../../common/scss/button.scss';
+$white_77: rgba(255, 255, 255, 0.77);
+$white_75: rgba(255, 255, 255, 0.77);
+$white_60: rgba(255, 255, 255, 0.60);
+$white_30: rgba(255, 255, 255, 0.30);
+$white_10: rgba(255, 255, 255, 0.10);
+
+
+.form-container {
+	background-color:white;
+	.row {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding-top:0px;
+        background-color: $bgc;
+        padding-bottom: 75px;
+
+		@include respond('m') {
+			padding-top:20px;
+            padding-bottom:120px;
+        }
+
+		@include respond('l') {
+            padding-bottom:150px;
+		}
+
+		@include respond('m') {
+			flex-direction: row;
+			align-items: start;
+			justify-content: center;
+		}
+	}
+}
+
+
+.auth-box {
+	display:flex;
+	flex-direction: column;
+	max-width: 95%;
+		@include respond('m') {
+	min-width: 500px;
+		}
+	justify-content: center;
+	h1 {
+		text-align: center;
+		font-size:48px;
+		color:white;
+	}
+	.input-row {
+	display:flex;
+	flex:1;
+	flex-direction: row;
+	flex-wrap: wrap;
+
+	.input-container {
+		display:flex;
+		flex:1;
+		flex-direction: column;
+		padding: 0 0px 0px 0;
+		margin-bottom: 15px;
+		max-width: 100%;
+		min-width: 300px;
+
+		@include respond('s') {
+			margin: 10px;
+		}
+
+		label {
+			font-size: 16px;
+			color: $white_77;
+			margin-bottom:7px;
+			position: relative;
+		}
+
+		input, select {
+			border: none;
+			background-color:#2d2a4f;
+			padding:10px;
+			border-radius:10px;
+			color:$white;
+
+			@include respond('s') {
+				padding:15px;
+			}
+
+			&:focus {
+				outline: none !important;
+				border:1px solid $green;
+				box-shadow: 0 0 5px #719ECE;
+			}
+		}
+	}
+
+}
+}
+
+.error {
+	padding-left:30px;
+	color:red;
+}
+
+.passwordreset-status {
+	color: white;
+}
+label.reset-password {
+		text-align:center;
+		text-decoration: underline;
+		cursor: pointer;
+		margin-top: 25px;
+		color: $white_60;
+	}
+
+.register-container {
+	background-color: white;
+	display:flex;
+	flex-direction:column;
+	h1 {
+		text-align:center;
+	}
+
+    margin-bottom: 25px;
+    @include respond('s') {
+        padding-bottom:45px;
+    }
+}
+.select-container {
+	display:flex;
+	flex:2;
+	flex-direction: row;
+.item {
+	display:flex;
+	flex:1;
+	justify-content: center;
+	background-color:$innerBgc2;
+	padding:10px;
+	border-radius:25px;
+	cursor: pointer;
+label {
+    font-family:"proxima-nova" !important;
+	font-size:18px !important;
+	font-weight:bold !important;
+}
+}
+.item.selected {
+	background-color: $green;
+}
+}

@@ -1,0 +1,68 @@
+@import '../../common/scss/default.scss';
+
+.footer {
+    background-color: $bgc;
+    padding: 5% 0;
+    color: $white;
+    display: flex;
+    justify-content: center;
+
+	.footer-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    
+        @include respond('s') {
+            width: 80%;
+        }
+    
+        @include respond('m') {
+            justify-content: space-between;
+        }
+    
+        @include respond('l') {
+            width: 60%;
+        }
+
+        .footer-item {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            text-align: center;
+
+            .footer-icons {
+                display: flex;
+                list-style: none;
+                max-width: 240px;
+                margin: 0;
+                padding: 0;
+
+                .footer-icon {
+                    margin: 0 5px;
+                }
+            }
+    
+            .footer-links {
+                display: none;
+                flex-direction: column;
+                list-style: none;
+            }
+        }
+
+
+    }
+}
+
+.addr {
+	font-size: 12px;
+	font-weight: 300;
+	letter-spacing: 0.25px;
+}
+
+.list-inline-item {
+	img {
+		margin: 0 25px;
+	}
+}

@@ -1,0 +1,62 @@
+
+
+
+
+------------------------------------------
+-- SETTINGS
+------------------------------------------
+
+/** SETTING GROUPS */
+create table if not exists app.setting_groups ( --drop table if exists app.setting_groups
+    id smallint primary key,
+    description text 
+);
+insert into app.setting_groups (id, description)
+values (1,'email'),(2,'notification'),(3,'assistance'),(4,'transaction') on conflict do nothing;
+
+
+/** SETTING VALUE TYPES */
+create table if not exists app.setting_value_types ( --drop table if exists app.setting_value_types
+    id smallint primary key,
+    description text 
+);
+insert into app.setting_value_types (id, description)
+values (1,'integer'),(2,'text'),(3,'timestamp'),(4,'boolean') on conflict do nothing;
+
+
+/** SETTINGS */
+create table if not exists app.settings ( --drop table if exists app.settings
+    id smallint primary key,
+    description text,
+    setting_group_id integer not null references app.setting_groups(id) on delete set null,
+    setting_value_type_id integer not null references app.setting_value_types(id) on delete set null
+);
+insert into app.settings (id, description, setting_group_id, setting_value_type_id)
+values (1,'money_acc_transaction_mode',4,2) on conflict do nothing;
+
+
+/** MEMBERS SETTINGS */
+create table if not exists app.members_settings ( --drop table if exists members_settings cascade
+    id smallserial primary key,
+    value text,
+    member_id integer not null references app.members(id) on delete cascade,
+    setting_id integer not null references app.settings(id) on delete cascade
+);
+
+-- Create initial settings after insert in members
+create or replace function app.members_settings_create_initial() returns trigger as $$
+begin
+	if old.id is not null 
+	 	then raise 'create_initial_settings_only_for_new_members';
+	else
+		insert into app.members_settings (value, member_id, setting_id)
+		values 
+			('balance',new.id,1) --money_acc_transaction_mode (balance/cost)
+		;
+		return new;
+	end if;
+end;
+$$ language plpgsql;
+drop trigger if exists members_settings_create_initial on app.members cascade;
+create trigger members_settings_create_initial after insert on app.members
+for each row execute procedure app.members_settings_create_initial();

@@ -1,0 +1,182 @@
+@import "../../common/scss/default.scss";
+
+.navigation {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+    height: 75px;
+    background: $bgc;
+    display: flex;
+    justify-content: center;
+
+    .navigation-content {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        @include respond("m") {
+            width: 80%;
+            justify-content: space-between;
+        }
+
+        @include respond("l") {
+            width: 60%;
+        }
+
+        a {
+            color: #fff;
+        }
+    }
+
+    .logo {
+        width: 75px;
+        height: 75px;
+        display: block;
+        margin: 0px;
+        position: absolute;
+        z-index: 1;
+        left: 10px;
+
+        @include respond("m") {
+            position: relative;
+            left: 0;
+            top: 0;
+        }
+
+        .logo-link {
+            padding: 0;
+            width: 75px;
+            height: 75px;
+            display: block;
+            margin: 0px;
+            position: absolute;
+            left: 0px;
+
+            @include respond("s") {
+                position: relative;
+                left: 0;
+                top: 0;
+            }
+
+            .logo-img {
+                padding: 12px 10px;
+            }
+        }
+    }
+
+    .nav {
+        width: 100%;
+        height: 75px;
+        position: relative;
+
+        @include respond("m") {
+            position: relative;
+            padding-left: 10px; //logo
+        }
+    }
+
+    .menu-icon {
+        display: inline-block;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        cursor: pointer;
+        width: 35px;
+        @include respond("m") {
+            display: none;
+        }
+    }
+
+    ul.collapsed {
+        position: absolute;
+        background-color: $bgc;
+        list-style: none;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        overflow: hidden;
+        max-height: 0;
+        margin: 0;
+
+        @include respond("m") {
+            max-height: 75px;
+            height: 75px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding-inline-start: 0;
+        }
+
+        li {
+            padding-left: 20px;
+            margin: 0px 0px;
+            width: 100%;
+            overflow: hidden;
+            height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            -webkit-transition: height 250ms ease-in;
+            -moz-transition: height 250ms ease-in;
+            -o-transition: height 250ms ease-in;
+            transition: height 250ms ease-in;
+
+            @include respond("m") {
+                padding-left: unset;
+                height: 75px;
+                width: unset;
+            }
+
+            &:hover {
+                background-color: $innerBgc;
+            }
+
+            a {
+                text-decoration: none;
+                display: block;
+                padding: 0 20px;
+                line-height: 75px;
+
+                @include respond("m") {
+                    padding: 0 5px;
+                    display: block;
+                }
+            }
+        }
+
+
+        &.is-expanded {
+            top: 75px;
+            left: 0;
+            padding-left: 0px;
+            width: 100%;
+            overflow: hidden;
+            max-height: 500px; /* approximate max height */
+
+            @include respond("m") {
+                top: 0;
+                left: unset;
+            }
+
+            li {
+                height: 75px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+                @include respond("m") {
+                    border-bottom: none;
+                }
+            }
+        }
+    }
+}
+.navi-outline-item {
+    border: 2px;
+    border-radius: 10px;
+    border-style: solid;
+    border-color: $green;
+    padding: 5px;
+}

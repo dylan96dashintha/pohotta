@@ -1,0 +1,21 @@
+@mixin respond($breakpoint, $breakpoint2: false) {
+	@if map-has-key($breakpoints, $breakpoint) {
+		@media #{map-get($breakpoints, $breakpoint)} {
+			@content;
+		}
+	} @else {
+		@error 'No value found for `#{$breakpoint}`. '
+          + 'Please make sure it is defined in `$breakpoints` map.';
+	}
+
+	@if $breakpoint2 {
+		@if map-has-key($breakpoints, $breakpoint2) {
+			@media #{map-get($breakpoints, $breakpoint2)} {
+				@content;
+			}
+		} @else {
+			@error 'No value found for `#{$breakpoint2}`. '
+              + 'Please make sure it is defined in `$breakpoints` map.';
+		}
+	}
+}

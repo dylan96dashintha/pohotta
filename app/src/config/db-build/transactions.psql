@@ -1,0 +1,433 @@
+
+
+
+
+------------------------------------------
+-- TRANSACTIONS
+------------------------------------------
+
+
+/** TRANSACTION TYPES */
+create table if not exists app.transaction_types ( --drop table if exists app.transaction_types cascade
+    id smallint primary key,
+    description text,
+    sign integer 
+);
+insert into app.transaction_types (id, description,sign)
+values (1,'income',1),(2,'cost',-1),(3,'transfer',1),(4,'change',1),(5,'balance',1) on conflict do nothing;
+
+
+/** CUSTOMER ACCOUNT TRANSACTIONS */
+-- created_by kenttä??
+create table if not exists app.cust_acc_transactions ( --drop table if exists app.cust_acc_transactions cascade
+    id bigserial primary key,
+    parent_id bigint null references app.cust_acc_transactions(id) on delete cascade,
+    description text,
+    amount decimal,
+    date date,
+	cust_account_id integer null references app.cust_accounts(id) on delete cascade,
+    transaction_type_id smallint references app.transaction_types(id) on delete set null,
+    cust_category_id integer references app.cust_categories(id) on delete set null,
+    created_by int references app.members(id) on delete no action,
+    created_on timestamp with time zone not null default now(),
+    updated_on timestamp with time zone not null default now() 
+);
+
+-- Create transaction
+create or replace function app.cust_acc_transactions_create(
+	_cust_id integer, _desc text, _trans_type_id integer, _amount decimal, _date date, _acc_id integer, 
+	_cust_category_id integer default null, _transfer_direction text default null, _bal_account_id integer default 0,
+	out _status smallint, out _msg text, out _d json) as $$
+declare
+	--transactions
+	_trans_id integer; _bal_trans_id integer := 0; _calc_transaction decimal; _sign integer; _acc_type_id integer;
+	--balance mode calculations
+	eo_month date := (date_trunc('month', now()) + interval '1 month' - interval '1 day')::date; 
+	--errors
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	-- Find account & account type
+	select into _acc_id,_acc_type_id id, account_type_id
+	from app.cust_accounts where id = _acc_id and customer_id = _cust_id;
+	-- If transfer, check that there's a balance account
+	if _trans_type_id = 3 then
+		select id from app.cust_accounts where id = _bal_account_id and customer_id = _cust_id into _bal_account_id;
+	else 
+		_bal_account_id = 0;
+	end if;
+	-- Check that account & balance account exists
+	if _acc_id is null or _bal_account_id is null then
+		_status := 404;
+		_msg := 'e_account_not_found';
+		_d := '{}';
+	else 
+		--Get transaction sign  
+		select _x into _sign from app.x_help_get_sign(_acc_id, _trans_type_id, _transfer_direction); --raise notice 'Sign: %', _sign;
+		raise notice 'Sign: %', _sign;
+		
+		-- Insert transaction
+		if _trans_type_id <> 5 then -- 5 = balance
+			insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+			values(_desc, _amount * _sign, _date,_acc_id,_trans_type_id,_cust_category_id) 
+			returning id into _trans_id;
+		end if;
+		
+		-- Insert balance account transaction if transfer
+		if _trans_type_id = 3 then -- 3 = transfer
+			insert into app.cust_acc_transactions(parent_id, description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+			values(_trans_id, _desc, _amount * _sign *-1, _date,_bal_account_id,_trans_type_id,_cust_category_id) 
+			returning id into _bal_trans_id;
+		end if;
+		
+		-- Insert if user is entering balances
+		if _trans_type_id = 5 then -- 5 = balance
+			-- Calculate transaction (calc trans = inserted balance - all previous transactions)
+			-- raise notice 'Eo Month: %', eo_month;
+			select into _calc_transaction _amount - sum(amount) from app.cust_acc_transactions where cust_account_id = _acc_id and date <= eo_month; raise notice 'Calc.: %', _calc_transaction;
+			-- Money & Debt accounts: calculate cost cost  
+			if _acc_type_id in (1,3) then
+				--can't be positive (other transaction must be inserted first)
+				if _calc_transaction > 0 then
+					_status := 400;
+					_msg := 'e_cost_must_be_negative';
+					_d := '{}';
+				else
+					insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+					values(_desc, _calc_transaction, _date,_acc_id,2,_cust_category_id) 
+					returning id into _trans_id;
+				end if;
+			end if;
+			-- Investment & Other accounts: calculate change in value (laskennallinen tuotto / tappio) 
+			if _acc_type_id in (2,4) then
+				--can't be positive (other transaction must be inserted first)
+				insert into app.cust_acc_transactions(description, amount, date, cust_account_id,transaction_type_id,cust_category_id)
+				values(_desc, _calc_transaction, _date,_acc_id,4,_cust_category_id) 
+				returning id into _trans_id;
+			end if;
+		end if;
+		
+		raise notice 'Status: %', _status;
+		if _status is null then
+			_status := 201;
+			_msg := 's_transaction_created';
+			_d := json_agg(t) from (
+				select t.* from app.cust_acc_transactions t where id in (_trans_id,_bal_trans_id)
+			)t;
+		end if;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+
+/*
+-- Usage:
+select * from app.cust_acc_transactions_create(
+	2, --customer id
+	'Siirto', --description
+	3, -- transaction type id
+	50, --amount
+	'2020-05-24', --date
+	4, --customer account id
+	null, --category id, default null
+	'in', --transfer direction, default null
+	5 --balance account id, default 0
+);
+*/
+
+
+--Get transactions
+--Usage: select * from app.cust_acc_transactions_get(1,1);
+create or replace function app.cust_acc_transactions_get(_cust_id integer, _acc_id integer,
+	out _status smallint, out _msg text, out _d json) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	_status := 200;
+	_msg := 's_transactions_get';
+	_d := json_agg(t) from (
+		select t.* from app.cust_acc_transactions t join app.cust_accounts a on a.id = t.cust_account_id	 
+		where a.customer_id = _cust_id and t.cust_account_id = _acc_id
+	)t;
+    if _d is null then
+        _status := 404;
+        _msg := 'e_no_transactions_not_found_for_account';
+      	_d := '{}';
+	end if;
+	
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+-- Update transaction
+-- Usage:
+create or replace function app.cust_acc_transactions_update(
+	_cust_id integer, _trans_id integer, _desc text,  _amount decimal, _date date, 
+	_cust_category_id integer default null, _transfer_direction text default null,
+	out _status smallint, out _msg text, out _d json) as $$
+declare
+	 _sign integer; _acc_id integer; _trans_type_id integer;
+	_bal_trans_id integer := 0; _bal_account_id integer default 0;
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	-- Find account & account type
+	select into _trans_id,_bal_trans_id,_trans_type_id,_acc_id 
+	t.id, t.parent_id, t.transaction_type_id, acc.id
+	from app.cust_acc_transactions t
+	left join app.cust_accounts acc on acc.id = t.cust_account_id
+	where t.id = _trans_id and customer_id = _cust_id;
+	if _trans_id is null then
+		_status := 404;
+		_msg := 'e_transaction_not_found';
+		_d := '{}';
+	else
+		--Get transaction sign  
+		select _x into _sign from app.x_help_get_sign(_acc_id, _trans_type_id, _transfer_direction); --raise notice 'Sign: %', _sign;
+		--raise notice 'Sign: %', _sign;
+		
+		-- Insert transaction
+		if _trans_type_id <> 5 then -- 5 = balance
+			update app.cust_acc_transactions set 
+			description = _desc, 
+			amount = _amount * _sign, 
+			date = _date, 	
+			cust_category_id = _cust_category_id
+			where id = _trans_id;
+		end if;
+		
+		-- Insert balance account transaction if transfer
+		if _trans_type_id = 3 then -- 3 = transfer
+			-- Check if transaction or balance transaction is updated
+			if _bal_trans_id is null then
+				update app.cust_acc_transactions set 
+					description = _desc, 
+					amount = _amount * _sign *-1, 
+					date = _date, 	
+					cust_category_id = _cust_category_id
+					where parent_id = _trans_id;
+			else 
+				update app.cust_acc_transactions set 
+					description = _desc, 
+					amount = _amount * _sign*-1, 
+					date = _date, 	
+					cust_category_id = _cust_category_id
+					where id = _bal_trans_id;
+			end if;
+		end if;
+		
+		raise notice '_bal_trans_id: %', _bal_trans_id;
+		--raise notice 'parent_id: %', _parent_id;
+		raise notice '_trans_id: %', _trans_id;
+		
+		
+		if _status is null then
+			_status := 201;
+			_msg := 's_transaction_updated';
+			_d := json_agg(t) from (
+				select t.* from app.cust_acc_transactions t where id in (_trans_id,_bal_trans_id) or parent_id = _trans_id
+			)t;
+		end if;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+/*
+-- Usage:
+select * from app.cust_acc_transactions_update(
+	2, --customer id
+	19, --transaction id
+	'Siirto edited', --description
+	50, --amount
+	'2020-05-24', --date
+	null, --category id, default null
+	null --transfer direction, default null
+);
+*/
+
+-- Delete transaction
+-- Usage: select * from app.cust_acc_transactions_delete(1,2);
+create or replace function app.cust_acc_transactions_delete(_cust_id integer, _trans_id integer,
+	out _status smallint, out _msg text, out _d json) as $$
+declare
+	_sign integer; _parent_id integer; _transaction_type_id integer;
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	-- Get transaction and parent
+	select into _trans_id, _parent_id,_transaction_type_id id, parent_id,transaction_type_id from app.cust_acc_transactions where id = _trans_id;
+
+	if _trans_id is null then
+		_status := 404;
+		_msg := 'e_transaction_not_found';
+		_d := '{}';
+	elsif _transaction_type_id = 5 then
+		_status := 405;
+		_msg := 'e_not_allowed_balance_delete';
+		_d := '{}';
+	else
+		_d := json_agg(t) from (
+			select t.* from app.cust_acc_transactions t join app.cust_accounts a on a.id = t.cust_account_id 
+			where t.id in (_trans_id,_parent_id) and a.customer_id = _cust_id	 
+		)t;
+		_status := 200;
+		_msg := 's_transaction_deleted';
+		delete from app.cust_acc_transactions where id in (_trans_id,_parent_id);
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+
+/** CUSTOMER ACCOUNT TRANSACTIONS CUSTOMER ACCOUNT MEMBERS */
+create table if not exists app.cust_acc_transactions_cust_accounts_members ( --drop table if exists app.cust_acc_transactions_cust_accounts_members
+    id bigserial primary key,
+    member_id integer not null,
+    ownership_pct decimal not null,
+    cust_accounts_members_id integer null references app.cust_accounts_members(id) on delete set null,
+    cust_acc_transaction_id bigint not null references app.cust_acc_transactions(id) on delete cascade
+);
+
+-- Share transaction to members after cust_acc_transactions_create
+create or replace function app.cust_acc_transactions_cust_accounts_members_create() returns trigger as $$
+declare
+    n_member_email text;
+    n_member_id integer;
+begin
+	if old.id is not null 
+	 	then raise 'only new transactions can be shared';
+	else
+		raise notice 'New: %', new;
+		raise notice 'New cust_account_id: %', new.cust_account_id;
+		insert into app.cust_acc_transactions_cust_accounts_members (
+			member_id, 
+			ownership_pct, 
+			cust_accounts_members_id, 
+			cust_acc_transaction_id
+		)
+		select 
+			acc_members.member_id,
+			acc_members.ownership_pct,
+			acc_members.id,
+			new.id
+		from app.cust_accounts_members acc_members 
+		where acc_members.cust_account_id = new.cust_account_id;
+	
+		return new;
+	end if;
+end;
+$$ language plpgsql;
+drop trigger if exists cust_acc_transactions_cust_accounts_members_create on app.cust_acc_transactions cascade;
+create trigger cust_acc_transactions_cust_accounts_members_create after insert on app.cust_acc_transactions
+for each row execute procedure app.cust_acc_transactions_cust_accounts_members_create();
+
+--Create view for account balance
+drop view if exists app.v_cust_account_balance_with_transactions;
+create or replace view app.v_cust_account_balance_with_transactions as (
+	with acc_data as (
+	select
+		acc.customer_id,
+		date_trunc('month', t.date) as month,
+		lag(date_trunc('month', t.date)) over (partition by acc.id order by acc.id,date_trunc('month', t.date)) as prev_month,
+		acc.id as acc_id,
+		acc.description as acc_name,
+		sum(sum(amount)) over (partition by acc.id order by acc.id,date_trunc('month', t.date)) as acc_sum,
+		lag(sum(amount)) over (partition by acc.id order by acc.id,date_trunc('month', t.date)) as acc_sum_prev_m,
+		( sum(sum(amount)) over (partition by acc.id order by acc.id,date_trunc('month', t.date)) - lag(sum(amount)) over (partition by customer_id order by acc.id,date_trunc('month', t.date)) ) /
+		nullif(lag(sum(amount)) over (partition by acc.id order by acc.id,date_trunc('month', t.date)),0) as acc_vs_m
+	from app.cust_acc_transactions t
+	left join app.cust_accounts acc on acc.id = t.cust_account_id
+	group by 1,2,4,5
+	), basedata as (
+		select
+		to_char(month,'MM/YYYY') as month_label,
+		to_char(prev_month,'MM/YYYY') as prev_month_label,
+		d.*,
+		tt.id as trans_type_id,
+		tt.description as trans_type_name,
+		sum(amount) over (partition by acc_id,tt.id,month order by acc_id,month) as trans_type_sum,
+		t.id,
+		t.description,
+		t.date,
+		t.amount,
+		t.created_on,
+		t.updated_on,
+		t.created_by
+	from app.cust_acc_transactions t
+	left join app.cust_accounts acc on acc.id = t.cust_account_id
+	left join app.transaction_types tt on tt.id = t.transaction_type_id
+	left join acc_data d on acc.id = d.acc_id and d.month = date_trunc('month', t.date)
+	order by t.id
+	)
+	select
+		acc.customer_id,
+		coalesce(base.month,date_trunc('month', now())) as month,
+		coalesce(base.month_label, to_char(date_trunc('month', now()),'MM/YYYY')) as month_label,
+		base.prev_month_label,
+		--account
+		acc.id as acc_id,
+		acc.description as acc_name,
+		acct.description as acc_type_name,
+		base.acc_sum,
+		base.acc_sum_prev_m,
+		base.acc_vs_m,
+		--transaction type
+		base.trans_type_id,
+		base.trans_type_name,
+		base.trans_type_sum,
+		--transactions
+		base.id,
+		base.description,
+		base.date,
+		base.amount,
+		base.created_on,
+		base.updated_on,
+		base.created_by
+	from app.cust_accounts acc
+	left join app.account_types acct on acct.id = acc.account_type_id
+	left join basedata base on base.acc_id = acc.id
+);
+
+--Get account balance & transactions
+--Usage: select * from app.cust_account_balance_with_transactions(1,1);
+create or replace function app.cust_account_balance_with_transactions(_cust_id integer, _acc_id integer, 
+    out _status smallint, out _msg text, out _d json) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+    select id into _acc_id from app.cust_accounts where customer_id = _cust_id and id = _acc_id;
+    _d := json_agg(t) from (
+        select * from app.v_cust_account_balance_with_transactions r where customer_id = _cust_id and acc_id = _acc_id
+    )t;
+		
+	 if _acc_id is null or _d is null then
+	 	_status := 404;
+        _msg := 'e_acc_balance_with_transactions_not_found';
+      	_d := '{}'; 
+    else
+		_status := 200;
+        _msg := 's_get_acc_trans_with_balance'; 
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+

@@ -1,0 +1,25 @@
+@import '../../common/scss/default.scss';
+
+body {
+	color: $dark-blue;
+	max-width: 100%;
+	min-width: 320px;
+}
+
+.page-container {
+    padding: 75px 0;
+	background-color: $bgc;
+	display:flex;
+	flex:1;
+	flex-direction:column;
+	height:100vh;
+
+	h1 {
+		color: $white;
+	}
+	h2 {
+        padding-left: 30px;
+        font-family:"proxima-nova";
+        color: $white_75;
+	}
+}

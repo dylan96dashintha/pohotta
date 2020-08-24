@@ -1,0 +1,15 @@
+
+
+
+
+------------------------------------------
+-- VISUALS
+------------------------------------------
+
+/** VISUALS */
+create table if not exists app.visuals ( --drop table if exists app.visuals
+    id smallint primary key,
+    description text 
+);
+insert into app.visuals (id, description)
+values (1,'combo'),(2,'bar'),(3,'line'),(4,'doughnut'),(5,'custom_table') on conflict do nothing;

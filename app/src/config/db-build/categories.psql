@@ -1,0 +1,25 @@
+
+
+
+
+------------------------------------------
+-- CATEGORIES
+------------------------------------------
+
+/** CATEGORY TYPES */
+create table if not exists app.category_types ( --drop table if exists app.category_types
+    id smallint primary key,
+    description text not null,
+    multiplier integer not null 
+);
+insert into app.category_types (id, description,multiplier)
+values (1,'income',1),(2,'cost',-1),(3,'asset',1),(4,'debt',-1),(5,'hidden',1) on conflict do nothing;
+
+
+/** CATEGORIES */
+create table if not exists app.cust_categories ( --drop table if exists app.cust_categories
+    id serial primary key,
+    description text not null,
+    category_type_id smallint not null references app.category_types(id) on delete set null,
+    customer_id integer not null references app.customers(id) on delete cascade
+);

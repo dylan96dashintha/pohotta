@@ -1,0 +1,49 @@
+
+
+
+
+------------------------------------------
+-- REPORTS
+------------------------------------------
+
+/** CUSTOMER REPORTS */
+create table if not exists app.cust_reports ( --drop table if exists app.cust_reports
+    id serial primary key,
+    description text not null,
+    is_active boolean default true,
+    visual_id smallint not null references app.visuals(id) on delete set null,
+    customer_id integer not null references app.customers(id) on delete cascade
+);
+
+/** CUSTOMER REPORTS CATEGORIES */
+create table if not exists app.cust_reports_categories ( --drop table if exists app.cust_reports_categories
+    primary key(customer_report_id,cust_category_id),
+    customer_report_id integer not null references app.cust_reports(id) on delete cascade,
+    cust_category_id integer not null references app.cust_categories(id) on delete cascade
+);
+
+
+/** CUSTOMER REPORTS MEMBERS */
+create table if not exists app.cust_reports_members ( --drop table if exists app.cust_reports_members
+    primary key(customer_report_id,member_id),
+    customer_report_id integer not null references app.cust_reports(id) on delete cascade,
+    member_id integer not null references app.members(id) on delete cascade
+);
+
+
+/** CUSTOMER REPORTS ACCOUNTS */
+create table if not exists app.cust_reports_accounts ( --drop table if exists app.cust_reports_accounts
+    primary key(customer_report_id,cust_account_id),
+    customer_report_id integer not null references app.cust_reports(id) on delete cascade,
+    cust_account_id integer not null references app.cust_accounts(id) on delete cascade
+);
+
+
+/** CUSTOMER REPORTS SOURCES */
+create table if not exists app.cust_reports_sources ( --drop table if exists app.cust_reports_sources
+    primary key(customer_report_id,source_id),
+    customer_report_id integer not null references app.cust_reports(id) on delete cascade,
+    source_id integer not null references app.sources(id) on delete cascade
+);
+
+

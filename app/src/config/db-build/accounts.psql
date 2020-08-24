@@ -1,0 +1,327 @@
+
+
+
+
+------------------------------------------
+-- ACCOUNTS
+------------------------------------------
+
+/** ACCOUNT TYPES */
+create table if not exists app.account_types ( --drop table if exists app.account_types cascade
+    id smallint primary key,
+    description text,
+    sign integer 
+);
+insert into app.account_types (id, description, sign)
+values (1,'money',1),(2,'investment',1),(3,'debt',-1),(4,'other',1) on conflict do nothing;
+
+--Get account types
+--Usage: select * from app.account_types_get();
+create or replace function app.account_types_get(out _status smallint, out _msg text, out _d json) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+	_status := 200;
+	_msg := 's_account_types_get';
+	_d := json_agg(t) from (
+		select * from app.account_types
+	)t;
+	
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+/** CUSTOMER ACCOUNTS */
+create table if not exists app.cust_accounts ( --drop table if exists app.cust_accounts
+    id serial primary key,
+    description text,
+    is_balance_mode boolean not null,
+    account_type_id smallint not null references app.account_types(id) on delete set null,
+    customer_id integer not null references app.customers(id) on delete cascade
+);
+
+--Create account with balance
+--Usage: select * from app.cust_accounts_create_with_balance(1,'S-pankin tili saldolla',true,1,'2020-06-01',1000);
+create or replace function app.cust_accounts_create_with_balance(
+	_cust_id integer, _desc text, _is_bal_mode boolean, _acc_type_id integer, _date date, _balance decimal,  
+	out _status smallint, out _msg text, out _d json) as $$
+declare
+	_acc_id integer;
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     --Check if account already exists
+    select id from app.cust_accounts where description = _desc and customer_id = _cust_id into _acc_id; 
+	if _acc_id is not null then 
+        _status := 409;
+        _msg := 'e_account_exists';
+        _d := '{}';
+    else
+        insert into app.cust_accounts(description, is_balance_mode, account_type_id,  customer_id)
+        values(_desc, _is_bal_mode, _acc_type_id, _cust_id) returning id into _acc_id;
+		
+		insert into app.cust_acc_transactions(amount,date,cust_account_id,transaction_type_id)
+		values(_balance,_date,_acc_id,5); --5 = balance 
+        _status := 201;
+        _msg := 's_account_with_balance_created';
+        _d := row_to_json(r.*) from app.cust_accounts r where id = _acc_id;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+--Get accounts
+--Usage: select * from app.cust_accounts_get(1);
+create or replace function app.cust_accounts_get(_cust_id integer,out _status smallint, out _msg text, out _d json) as $$
+declare
+	_acc_id integer;
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     select id from app.cust_accounts where customer_id = _cust_id limit 1 into _acc_id;
+	 if _acc_id is null then
+        _status := 404;
+        _msg := 'e_no_accounts_found';
+      	_d := '{}';
+    else   
+        _status := 200;
+        _msg := 's_accounts_get';
+        _d := json_agg(t) from (
+			select * from app.cust_accounts where customer_id = _cust_id
+		)t;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+--Get one account
+--Usage: select * from app.cust_accounts_get_one(1,1);
+create or replace function app.cust_accounts_get_one(_cust_id integer, _acc_id integer, out _status smallint, out _msg text, out _d json) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     select into _acc_id id from app.cust_accounts where customer_id = _cust_id and id = _acc_id;
+	 if _acc_id is null then
+        _status := 404;
+        _msg := 'e_account_found';
+      	_d := '{}';
+    else   
+        _status := 200;
+        _msg := 's_accounts_get_one';
+		 _d := row_to_json(r.*) from app.cust_accounts r where customer_id = _cust_id and id = _acc_id;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+--Get balance accounts (all but current account)
+--Usage: select * from app.cust_accounts_get_all_but_one(1,39);
+create or replace function app.cust_accounts_get_all_but_one(_cust_id integer, _acc_id integer, out _status smallint, out _msg text, out _d json) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     select into _acc_id id from app.cust_accounts where customer_id = _cust_id and id = _acc_id;
+	 if _acc_id is null then
+        _status := 404;
+        _msg := 'e_account_found';
+      	_d := '{}';
+    else   
+        _status := 200;
+        _msg := 's_accounts_get_one';
+		 _d := json_agg(t) from (
+					select t.* from app.cust_accounts t where customer_id = _cust_id and id <> _acc_id
+				)t;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+
+--Update account
+--Usage: select * from app.cust_accounts_update(2,70,'Päivitetty',false);
+create or replace function app.cust_accounts_update(
+	_cust_id integer, _acc_id integer, _desc text, _is_bal_mode boolean, 
+	out _status smallint, out _msg text, out _d json ) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     --Check if account doesn't exist
+    select id from app.cust_accounts where id = _acc_id and customer_id = _cust_id into _acc_id;
+	if _acc_id is not null then
+		update app.cust_accounts
+		set
+			description = _desc,
+			is_balance_mode = _is_bal_mode
+		where id = _acc_id;
+        _status := 200;
+        _msg := 's_account_updated';
+        _d := row_to_json(r.*) from app.cust_accounts r where id = _acc_id;
+	else
+        _status := 404;
+        _msg := 'e_account_not_found';
+        _d := '{}';
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+--Delete account
+--Usage: select * from app.cust_accounts_delete(1,2);
+create or replace function app.cust_accounts_delete(_cust_id integer, _acc_id integer,out _status smallint, out _msg text, out _d json) as $$
+declare
+	transaction_qty integer;
+	e6 text; e7 text; e8 text; e9 text;
+begin
+	-- Check that account exists & belongs to user
+     select id from app.cust_accounts where id = _acc_id and customer_id = _cust_id into _acc_id;
+	 if _acc_id is not null then
+	 	-- Check if there are transactions
+	 	select count(*) from app.cust_acc_transactions where cust_account_id = _acc_id and transaction_type_id <> 5 into transaction_qty;
+		if transaction_qty = 0 then
+			_status := 200;
+			_msg := 's_accounts_delete';
+			_d := row_to_json(r.*) from app.cust_accounts r where id = _acc_id;
+			delete from app.cust_accounts where id = _acc_id;
+		else
+			_status := 405;
+			_msg := 'e_account_has_transactions';
+			_d := '{}'; 
+		end if;
+    else
+		_status := 404;
+        _msg := 'e_account_not_found';
+      	_d := '{}';  
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+
+/** CUSTOMER ACCOUNTS MEMBERS */
+create table if not exists app.cust_accounts_members ( --drop table if exists app.cust_accounts_members cascade
+    id serial primary key,
+    ownership_pct decimal not null,
+    cust_account_id integer not null references app.cust_accounts(id) on delete cascade,
+    member_id integer not null references app.members(id) on delete cascade
+);
+
+-- Create initial accounts members after insert in cust_accounts
+create or replace function app.cust_accounts_members_create_initial() returns trigger as $$
+declare
+    _email text;
+    _id integer;
+begin
+	if old.id is not null then
+	 	raise 'create_initial_cust_accounts_members_only_for_new_members';
+	else
+        -- Find member email
+        select invoicing_email from app.customers where id = new.customer_id into _email;
+		if 
+			_email is null then raise 'create_initial_cust_accounts_members_member_email_not_found'; 
+		end if;
+        -- Find member id
+        select id from app.members where email = _email into _id;
+		if 
+			_id is null then raise 'create_initial_cust_accounts_members_member_id_not_found'; 
+		end if;
+        -- Assign 100 % ownership to member that created the account
+		insert into app.cust_accounts_members (ownership_pct, cust_account_id, member_id)
+		values (1,new.id,_id);
+		return new;
+	end if;
+end;
+$$ language plpgsql;
+drop trigger if exists cust_accounts_members_create_initial on app.cust_accounts cascade;
+create trigger cust_accounts_members_create_initial after insert on app.cust_accounts
+for each row execute procedure app.cust_accounts_members_create_initial();
+
+/** OTHER ACCOUNTS STUFF*/
+
+-- Get available transaction types for account
+-- Usage: select * from app.cust_accounts_get_transaction_types(1,1);
+create or replace function app.cust_accounts_get_transaction_types(
+	_cust_id integer, _acc_id integer,out _status smallint, out _msg text, out _d json) as $$
+declare
+	_bal_mode boolean; _acc_type_id integer;
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     select into _acc_id, _bal_mode, _acc_type_id 
+	 id, is_balance_mode, account_type_id from app.cust_accounts where id = _acc_id and customer_id = _cust_id;
+	 if _acc_id is null then
+	 	_status := 404;
+        _msg := 'e_account_not_found';
+      	_d := '{}';
+    else
+		-- Get transaction types shown to member/client for both modes
+		-- money
+        if _acc_type_id = 1 then
+			if _bal_mode = true then
+				_d := json_agg(t) from (
+					select t.* from app.transaction_types t where description in ('income','transfer','balance')
+				)t;
+			else
+            	_d := json_agg(t) from (
+					select t.* from app.transaction_types t where description in ('income','transfer','cost')
+				)t;
+			end if;
+        end if;
+		--investment & other
+        if _acc_type_id in (2,4) then
+			if _bal_mode = true then
+				_d := json_agg(t) from (
+					select t.* from app.transaction_types t where description in ('balance')
+				)t;
+			else
+            	_d := json_agg(t) from (
+					select t.* from app.transaction_types t where description in ('change')
+				)t;
+			end if;
+        end if;
+		--debt
+        if _acc_type_id = 3 then
+			if _bal_mode = true then
+				_d := json_agg(t) from (
+					select t.* from app.transaction_types t where description in ('balance')
+				)t;
+			else
+            	_d := json_agg(t) from (
+					select t.* from app.transaction_types t where description in ('cost')
+				)t;
+			end if;
+        end if;
+		_status := 200;
+		_msg := 's_get_accounts_transaction_types';
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;

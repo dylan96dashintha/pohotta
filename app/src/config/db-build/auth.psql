@@ -1,0 +1,171 @@
+
+
+
+
+------------------------------------------
+-- AUTHENTICATION
+------------------------------------------
+
+/** CUSTOMERS */
+create table if not exists app.customers ( --drop table if exists app.customers
+    id serial primary key,
+    invoicing_email text unique constraint proper_email check (invoicing_email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
+    is_blocked boolean default false,
+    discount_pct decimal not null default 0,
+    created_on timestamp with time zone not null default now(),
+    updated_on timestamp with time zone not null default now()
+);
+
+-- Create customer, called from create_member
+create or replace function app.customers_create(_email text) returns integer as $$
+declare customer_id integer := 0;
+begin
+    if exists (select id from app.customers where invoicing_email = _email) then 
+		select id from app.customers where invoicing_email = _email into customer_id;
+	else 
+		insert into app.customers(invoicing_email, is_blocked)
+		values(_email, false) returning app.customers.id into customer_id;
+	end if;
+	--raise notice 'Customer: %', _email;
+    return customer_id;
+end;
+$$ language plpgsql;
+
+
+/** MEMBERS */
+create table if not exists app.members ( --drop table if exists app.members
+    id serial primary key,
+    email text unique constraint proper_email check (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
+    email_verified boolean not null default false,
+    passw text,
+    salt text,
+    is_blocked boolean default false,
+    customer_id integer not null references app.customers(id) on delete cascade,
+	created_on timestamp with time zone not null default now(),
+	updated_on timestamp with time zone not null default now()
+);
+
+-- Create member
+-- usage new customer: select * from app.members_create('mikko@test.com', '1234', 'random_salt','mikko@test.com');
+-- usage new member to old customer: select * from app.members_create('mikko@test.com', '1234', 'random_salt','mikko_member@test.com');
+create or replace function app.members_create(
+	_email text, _passw text, _salt text, _member_email text, 
+	out _status smallint, out _msg text, out _d json) as $$
+declare
+	_cust_id integer; _member_id integer;
+	e6 text; e7 text; e8 text; e9 text;
+begin
+    --Create customer or return existing customer id
+    select * from app.customers_create(_email) into _cust_id;
+	
+     --Check if member already exists
+    if exists (select id from app.members where email = _member_email) then 
+        _status := 409;
+        _msg := 'e_member_exists';
+        _d := '{}';
+    else
+        insert into app.members(email, passw, salt, customer_id)
+        values(_member_email, _passw, _salt,_cust_id)
+		returning id into _member_id;
+        _status := 201;
+        _msg := 's_created_member';
+        _d := row_to_json(r.*) from app.members r where id = _member_id;
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+-- Get member
+-- usage: select * from app.members_get('mikko22@test.com');
+create or replace function app.members_get(
+    _email text, 
+    out _status smallint, out _msg text, out _d json ) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin
+     --Check if member is found
+    if not exists (select id from app.members where email = _email) then 
+		_status := 401; --unauthorized
+        _msg := 'e_unauthorized'; --member not found
+		_d := '{}';
+    else
+		_status := 200;
+        _msg := 's_member_found';
+		_d := row_to_json(r) from (
+			select * from app.members where email = _email
+		) r;
+	end if;
+    
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+        _status := 500;
+end;
+$$ language plpgsql;
+
+--Update member, verify email
+--Usage: select * from app.members_update_verify_email(1,'mikko@test.com');
+create or replace function app.members_update_verify_email(_member_id integer, _email text, 
+	out _status smallint, out _msg text, out _d json ) as $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+    --Check if member is found
+    select id from app.members where id = _member_id and email = _email into _member_id;
+	if _member_id is not null then
+		update app.members
+		set 
+			email_verified = true,
+			updated_on = now()
+		where id = _member_id;
+        _status := 200;
+        _msg := 's_email_verified';
+        _d := row_to_json(r.*) from app.members r where id = _member_id;
+	else
+        _status := 404;
+        _msg := 'e_member_not_found';
+        _d := '{}';
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;
+
+--Update member, reset passw
+--Usage: select * from app.members_update_reset_passw(1,'mikko@test.com','Salasana1!');
+create or replace function app.members_update_reset_passw(_member_id integer, _email text, _new_passw text, 
+	out _status smallint, out _msg text, out _d json ) as $$
+declare
+	_old_passw text;
+	e6 text; e7 text; e8 text; e9 text;
+begin	
+     --Check if member is found
+    select passw from app.members where id = _member_id and email = _email into _old_passw;
+	if _old_passw is not null and _old_passw <> _new_passw then
+		update app.members
+		set 
+			passw = _new_passw,
+			updated_on = now()
+		where id = _member_id;
+        _status := 200;
+        _msg := 's_passw_changed';
+        _d := row_to_json(r.*) from app.members r where id = _member_id;
+	else
+        _status := 409;
+        _msg := 'e_change_passw';
+        _d := '{}';
+	end if;
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        _status := 500;
+        _msg := 'e_500';
+        _d := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+end;
+$$ language plpgsql;

@@ -1,0 +1,60 @@
+
+
+
+
+------------------------------------------
+-- TEST
+------------------------------------------
+ 
+ --Member & customer
+ select * from app.members_create('mikko@test.com', '1234', 'random_salt','mikko@test.com');
+ select * from app.members_create('mikko@test.com', '1234', 'random_salt','mikko_member@test.com');
+ select * from app.members;
+ select * from app.customers; 
+ select * from app.members_settings;
+ 
+ --Account
+ --create
+ select * from app.cust_accounts_create('S-pankin tili', 1, 1);
+ select * from app.cust_accounts_create('S-pankin tili 2', 1, 1);
+ select * from app.cust_accounts;
+ --get
+ select * from app.cust_accounts_get(1);
+ --update
+ select * from app.cust_accounts_update(1,2,'Muu tili', 1);
+ select * from app.cust_accounts;
+ --delete
+ select * from app.cust_accounts_delete(1,2);
+ select * from app.cust_accounts;
+
+ --Account members
+ select * from app.cust_accounts_members;
+ insert into app.cust_accounts_members(ownership_pct, cust_account_id, member_id) values(0.5,1,2);
+ update app.cust_accounts_members set ownership_pct = 0.5;
+ select * from app.cust_accounts_members;
+ 
+ --Create transaction
+ select * from app.cust_acc_transactions_create(1,'Tulon kirjaus', 100, '2020-04-26',1, 1, 1);
+ select * from app.cust_acc_transactions_create(1,'Menon kirjaus', 50, '2020-04-26',1, 2, 1);
+ select * from app.cust_acc_transactions;
+ 
+ --Check ownership of transaction
+ select 
+ 	trans.*,
+	trans.amount * pct.ownership_pct as amount_per_member
+ from app.cust_acc_transactions trans
+ join app.cust_acc_transactions_cust_accounts_members pct on pct.cust_acc_transaction_id = trans.id;
+ 
+ --Get transactions
+ select * from app.cust_acc_transactions_get(1,1);
+ 
+ --Edit transaction
+ select * from app.cust_acc_transactions_update(1,1,'Tulon kirjaus muokattu', 100, '2020-04-26',1, 1, 1);
+ select * from app.cust_acc_transactions;
+ 
+ --Drop transaction
+ select * from app.cust_acc_transactions_delete(1,2);
+ select * from app.cust_acc_transactions;
+ 
+ 
+ 

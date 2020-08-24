@@ -1,0 +1,27 @@
+
+
+
+
+------------------------------------------
+-- INVOICES
+------------------------------------------
+
+/** INVOICES */
+create table if not exists app.invoices ( --drop table if exists app.invoices
+    id serial primary key,
+    reference_no smallint not null,
+    is_paid boolean not null default false,
+    inv_date timestamp with time zone not null default now(),
+    due_date timestamp with time zone not null,
+    customers_subscriptions_id integer not null references app.customers_subscriptions(id)
+);
+
+/** INVOICE LINES */
+create table if not exists app.invoice_lines ( --drop table if exists app.invoice_lines
+    id serial primary key,
+    quantity integer not null,
+    unit_price decimal not null,
+    unit_price_vat_pct decimal not null, --vat percentage e.g. 0,24
+    discount_pct decimal,
+    invoice_id integer not null references app.invoices(id)
+);

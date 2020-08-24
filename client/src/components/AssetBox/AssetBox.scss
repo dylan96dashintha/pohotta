@@ -1,0 +1,48 @@
+@import '../../common/scss/default.scss';
+
+.asset-box {
+    background-color: $innerBgc2_75;
+    padding: 15px 30px;
+    font-family:"proxima-nova";
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    cursor: pointer;
+
+    label.sum {
+        font-size: 26px;
+        color: $white;
+        font-weight:bold;
+    }
+    label.percentage {
+        color: $green2;
+        font-size:18px;
+        font-weight:bold;
+    }
+    label.small {
+        color: $white_75;
+        font-size: 12px;
+
+    }
+
+    .column {
+        display: flex;
+        flex-direction: column;
+        color: #fff;
+    }
+    .row {
+        display:flex;
+        flex-direction:row;
+    }
+}
+
+.asset-box.margin-child {
+    margin-top:6px;
+    margin-bottom:6px;
+    margin-right:18px;
+    margin-left: 36px;
+}
+
+.asset-box.margin {
+    margin: 6px 18px;
+}

@@ -1,0 +1,214 @@
+@import '../../common/scss/default.scss';
+@import '../../common/scss/button.scss';
+
+$white_77: rgba(255, 255, 255, 0.77);
+$white_75: rgba(255, 255, 255, 0.77);
+$white_60: rgba(255, 255, 255, 0.60);
+$white_30: rgba(255, 255, 255, 0.30);
+$white_10: rgba(255, 255, 255, 0.10);
+
+.invite-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: $innerBgc;
+	color: $white;
+    padding-bottom: 3em;
+    border-radius: 10px;
+    padding-top: 10px;
+
+	.content {
+        max-width: 95%;
+        z-index: 0;
+	
+		@include respond('s') {
+			width: 80%;
+		}
+
+		@include respond('l') {
+			width: 60%;
+		}
+	}
+
+	.main {
+		text-align: center;
+	}
+
+	h1.second {
+		padding: 0 16px;
+	}
+
+	h2.second {
+		margin-top: 12px;
+		margin-bottom: 18px;
+		font-size: 1.25em;
+		text-align: center;
+	}
+
+	h2.second:after {
+		content: "";
+		display: block;
+		margin-top: 10px;
+		border-bottom: 4px solid $green;
+	}
+
+	p {
+		font-weight: 300;
+		color: $white_75;
+    }
+
+    p.label-p {
+        font-size: 16px;
+        margin: 0;
+    }
+    
+    .error {
+        padding-left:10px;
+        color:red;
+    }
+}
+
+.input-row {
+	display:flex;
+	flex:1;
+	flex-direction: row;
+	flex-wrap: wrap;
+
+	.input-container {
+		display:flex;
+		flex:1;
+		flex-direction: column;
+		padding: 0 0px 0px 0;
+		margin-bottom: 15px;
+		max-width: 100%;
+		min-width: 275px;
+
+		@include respond('s') {
+			margin: 10px;
+        }
+        
+        .mini-info-container {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+
+            .mini-info {
+                font-size: 11.5px;
+                color: $white_75;
+    
+                @include respond('s') {
+                    font-size: 13px;
+                }
+            }
+        }
+
+
+		label {
+			font-size: 16px;
+			color: $white_77;
+			margin-bottom:7px;
+			position: relative;
+		}
+	
+		input {
+			border: none;
+			background-color:$white_10;
+			padding:10px;
+			border-radius:10px;
+			color:$white;
+
+			@include respond('s') {
+				padding:15px;
+			}
+	
+			&:focus {
+				outline: none !important;
+				border:1px solid $green;
+				box-shadow: 0 0 5px #719ECE;
+			}
+        }
+        
+		textarea {
+			border: none;
+			background-color:$white_10;
+			padding:10px;
+			border-radius:10px;
+            color:$white;
+            resize: vertical;
+
+			@include respond('s') {
+				padding:15px;
+			}
+	
+			&:focus {
+				outline: none !important;
+				border:1px solid $green;
+				box-shadow: 0 0 5px #719ECE;
+			}
+		}
+    }
+    
+    .radio {
+		display:flex;
+		flex:1;
+		flex-direction: row;
+		padding: 0 0px 0px 0;
+		margin-bottom: 5px;
+		max-width: 100%;
+        min-width: 275px;
+        display: flex;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding:15px;
+        padding: 12px 0px 2px;
+        border-radius: 10px;
+        
+		@include respond('s') {
+            margin: 0px;
+            padding: 20px 0px 10px 10px;
+		}
+
+		label {
+			font-size: 16px;
+			color: $white_77;
+			margin-bottom:7px;
+			position: relative;
+		}
+	
+		input {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            outline: none;
+            border: 3px solid gray;
+            padding: 5px;
+            margin: 0 15px 0 5px;
+            
+            &:before {
+                content: '';
+                display: block;
+                width: 60%;
+                height: 60%;
+                margin: 20% auto;
+                border-radius: 50%;
+            }
+	
+			&:focus {
+				border: 3px solid $green;
+            }
+            
+            &:checked {
+                border: 3px solid $green;
+            }
+        }
+        
+	}
+
+}
+
+.invite-result {
+    h2.success {
+        color: $green;
+    }
+}

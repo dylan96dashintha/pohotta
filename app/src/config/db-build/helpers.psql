@@ -1,0 +1,21 @@
+--Get sign for transaction (+/-)
+create or replace function app.x_help_get_sign(
+	_cust_acc_id integer, _trans_type_id integer, _trans_direction text default 'in',
+	out _x integer) as $$
+begin
+	--Example: Account type debt & transaction type balance = negative
+	--Example: Account type money & transaction income = positive  
+	select 
+		at.sign * tt.sign 
+	from app.cust_accounts a
+	join app.account_types at on at.id = a.account_type_id 
+	cross join app.transaction_types tt
+	where a.id = _cust_acc_id and tt.id = _trans_type_id
+	into _x;
+	
+	--if transfer out, change sign to (-)
+	if _trans_type_id = 3 and _trans_direction = 'out' then
+		_x = _x * -1;
+	end if;
+end;
+$$ language plpgsql;

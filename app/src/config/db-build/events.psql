@@ -1,0 +1,52 @@
+
+
+
+
+------------------------------------------
+-- EVENTS
+------------------------------------------
+
+/** EVENT TYPES */
+create table if not exists app.event_types ( --drop table if exists app.event_types
+    id smallint primary key,
+    description text not null
+);
+insert into app.event_types (id, description)
+values (1,'sign-up'),(2,'sign-in'),(3,'member-delete'),(4,'click'),(5,'pageview') on conflict do nothing;
+
+
+/** EVENTS */
+create table if not exists app.events ( --drop table if exists app.events
+    id serial primary key,
+    event_type_id smallint not null references app.event_types(id) on delete set null,
+    trigger text not null,
+    created_on timestamp with time zone not null default now(),
+    details text,
+    member_id integer null references app.members(id) on delete set null  --no action
+);
+
+-- Create event
+-- usage: select * from app.event_create('pageview', 'front-page');
+create or replace function app.event_create(req_event_type text, req_trigger text, req_details text default null, req_member_id integer default null, 
+out status smallint, out js json) AS $$
+declare
+	e6 text; e7 text; e8 text; e9 text;
+    event_id integer;
+begin
+
+    --Find event id
+    select id into event_id from app.event_types where description = req_event_type;
+
+    insert into app.events(event_type_id, trigger, details, member_id)
+    values(event_id, req_trigger, req_details, req_member_id);
+
+	js := null;
+	status := 200;
+    
+    exception
+        when others then get stacked diagnostics e6=returned_sqlstate, e7=message_text, e8=pg_exception_detail, e9=pg_exception_context;
+        js := json_build_object('code',e6,'message',e7,'detail',e8,'context',e9);
+        status := 500;
+end;
+$$ language plpgsql;
+
