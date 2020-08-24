@@ -22,6 +22,6 @@ export const fetchBalances = (): ThunkAction<void, BalancesState, unknown, Actio
 
 }
 
-export const setAssistBox = (isOpen : boolean, key: number): ThunkAction<void, BalancesState, unknown, Action<string>> => async (dispatch: any) => {
-    dispatch(showAssistBox(isOpen, key));
+export const setAssistBox = (isOpen : boolean, index: number): ThunkAction<void, BalancesState, unknown, Action<string>> => async (dispatch: any) => {
+    dispatch(showAssistBox(isOpen, index));
 }

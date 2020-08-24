@@ -3,7 +3,7 @@ export interface SelectType {
     displayValue: string
 }
 export interface AccountType {
-    [id: string]: {
+    // [id: string]: {
         id: number,
         name: string,
         sum: number,
@@ -11,21 +11,21 @@ export interface AccountType {
         vs?: any,
         accounts: any,
         isOpen?: boolean
-    }
+    // }
     
 }
 
-export interface BalancesState {
-    balances?: {
-        sum: number,
+export interface Balances {
+        sum?: number,
         sum_prev_m?: any,
         vs?: any,
-        account_types: Array<AccountType>,
+        account_types?: Array<AccountType>,
         month_label?: string,
         prev_month_label?: string,
-        
+}
 
-    },
+export interface BalancesState {
+    balances?: Balances,
     fetching:boolean,
     fetchError:boolean
 }
@@ -47,7 +47,7 @@ interface SetBalancesAction {
 interface SetAssistBoxAction {
     type: typeof SET_ASSISTBOX,
     isOpen: boolean,
-    key: number
+    index: number
 }
 
 export type BalancesActionTypes =  StartBalancesFetchingAction | ErrorBalancesFetchingAction | SetBalancesAction | SetAssistBoxAction

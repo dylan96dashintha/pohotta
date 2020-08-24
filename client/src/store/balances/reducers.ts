@@ -1,4 +1,4 @@
-import { BalancesState, ERROR_BALANCES_FETCHING, START_BALANCES_FETCHING, SET_BALANCES, BalancesActionTypes, AssistBoxActionTypes, SET_ASSISTBOX, AssistBoxState, AccountType } from "./types";
+import { BalancesState,Balances, ERROR_BALANCES_FETCHING, START_BALANCES_FETCHING, SET_BALANCES, BalancesActionTypes, AssistBoxActionTypes, SET_ASSISTBOX, AssistBoxState, AccountType } from "./types";
 import { act } from "@testing-library/react";
 
 const initialState: BalancesState = {
@@ -18,19 +18,35 @@ export function balancesReducer(
         case START_BALANCES_FETCHING:
             return {...state, fetching: true}
         case SET_BALANCES:
-            return {...state, fetching: false, balances: action.payload}
+            const excistingBalances = state.balances ? {...state.balances} : {}
+            return {...state, fetching: false, balances: { ...excistingBalances, ...action.payload }}
         case SET_ASSISTBOX:
             console.log("dddd",state);
-            // const index = state.balances?.account_types.findIndex
-            const index = 0
-            const actTypes = state.balances ?  [...state.balances?.account_types] :[]
-            actTypes[index] = {
-                ...actTypes[index],
-                //isOpen : true
-            }
+            // const index = state.balances?.account_types.findIndex(acc => acc.id === action.id)
+            const index = action.index
+            const balances: Balances = { ...state.balances }
             
-            console.log("act",actTypes);
-            return state
+            if(balances && balances.account_types){
+                const acctType = { 
+                    ...balances.account_types[index]
+                }
+
+                balances.account_types = [ ...balances.account_types ]
+
+                balances.account_types[index] = { 
+                    ...acctType,
+                    isOpen : !acctType.isOpen
+                }
+
+                // console.log('balances.account_types[index].isOpen', balances.account_types[index].isOpen)
+            }
+
+            console.log('balances....', balances )
+
+            return { 
+                ...state,
+                balances,
+            }
             
         default:
             return state;

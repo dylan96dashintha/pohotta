@@ -22,10 +22,10 @@ export function startBalancesFetching(): BalancesActionTypes {
     }
 }
 
-export function showAssistBox(isOpen: boolean,key: number): BalancesActionTypes {
+export function showAssistBox(isOpen: boolean,index: number): BalancesActionTypes {
     return {
         type: SET_ASSISTBOX,
         isOpen: isOpen,
-        key: key
+        index
     }
 }

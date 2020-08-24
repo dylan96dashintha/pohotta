@@ -24,7 +24,8 @@ const Record = () => {
     locationArray.push(location.pathname);  
     
     useEffect(() => {
-        dispatch(fetchBalances());
+        if(!balances)
+            dispatch(fetchBalances());
     }, [dispatch]);
 
     const getTotalBoxData = (balances: BalancesState["balances"]) => {
@@ -49,9 +50,9 @@ const Record = () => {
 
                 {balances !== undefined &&
                     balances.hasOwnProperty("account_types") &&
-                    balances.account_types.map((accountType, index) => {
-                        
-                    return <CollapsableAssetBox data={accountType} data2={locationArray} key={"box" + index} />;
+                    balances?.account_types?.map((accountType, index) => {
+                        console.log('CollapsableAssetBox accountType', accountType)
+                    return <CollapsableAssetBox data={accountType} data2={locationArray} key={"box" + index} index={index}/>;
                     })}
 
                 <FloatingRoundButton buttonAction={() => history.push("/accountForm")} />

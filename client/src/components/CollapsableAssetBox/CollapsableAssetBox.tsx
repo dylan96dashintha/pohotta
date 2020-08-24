@@ -42,24 +42,26 @@ const CollapsableAssetBox = (props: any) => {
     const [isOpen, setIsOpen] = useState(false);
 
     {console.log("beforeeeeee",isOpen)} 
-    function assistBoxOpen(key: number) {
-        
-        dispatch(setAssistBox(isOpen, key));
+    function assistBoxOpen() {
+        dispatch(setAssistBox(isOpen, props.index));
     }
 
     return (
         <Fragment>
-            {console.log("before",isOpen)} 
-            <div onClick={() => setIsOpen(!isOpen) }>
+            {console.log("before props",props)} 
+            <div onClick={() => {
+                setIsOpen(!isOpen) 
+                console.log('props', props)
+                assistBoxOpen()
+            }}>
                 
                 <AssetBox account={getMainBoxData(accounts, isOpen)} />
                 
                 
             </div>
             {accounts.hasOwnProperty("accounts") &&
-                (isOpen ) &&
+                (props.data.isOpen ) &&
                 accounts.accounts.map((acc: any) => {
-                    assistBoxOpen(acc.id);
                     return <AssetBox account={getChildBoxData(acc)} key={acc.id} />;
                 })}
         </Fragment>
